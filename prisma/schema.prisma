@@ -1,0 +1,262 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users & Auth ───────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String
+  avatar        String?
+  role          Role      @default(USER)
+  status        Status    @default(ACTIVE)
+  lastSeenAt    DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  conversations Conversation[]
+  messages      Message[]
+  projects      Project[]
+  memories      Memory[]
+  apiKeys       ApiKey[]
+  researchJobs  ResearchJob[]
+
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+// ─── Conversations & Messages ────────────────────────────────────
+
+model Conversation {
+  id        String    @id @default(cuid())
+  title     String    @default("New conversation")
+  model     String    @default("sonnet-4.6")
+  pinned    Boolean   @default(false)
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([userId, updatedAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  userId         String?
+  role           MessageRole
+  content        String
+  model          String?
+  inputTokens    Int      @default(0)
+  outputTokens   Int      @default(0)
+  thinkingUsed   Boolean  @default(false)
+  toolsUsed      String[] @default([])
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+// ─── Projects ────────────────────────────────────────────────────
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  color       String   @default("#3B82F6")
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  files ProjectFile[]
+
+  @@index([userId])
+  @@map("projects")
+}
+
+model ProjectFile {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  path      String
+  size      Int      @default(0)
+  mimeType  String   @default("application/octet-stream")
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("project_files")
+}
+
+// ─── Memory ──────────────────────────────────────────────────────
+
+model Memory {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String
+  value     String
+  category  String   @default("General")
+  source    String   @default("manual")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([userId, category])
+  @@map("memories")
+}
+
+// ─── API Keys ────────────────────────────────────────────────────
+
+model ApiKey {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  keyHash   String    @unique
+  prefix    String
+  lastUsed  DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([keyHash])
+  @@map("api_keys")
+}
+
+// ─── Research Jobs ───────────────────────────────────────────────
+
+model ResearchJob {
+  id          String         @id @default(cuid())
+  userId      String
+  topic       String
+  depth       String         @default("deep")
+  status      ResearchStatus @default(RUNNING)
+  sources     Json           @default("[]")
+  report      String?
+  startedAt   DateTime       @default(now())
+  completedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startedAt])
+  @@map("research_jobs")
+}
+
+enum ResearchStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+// ─── RAG Documents ───────────────────────────────────────────────
+
+model Document {
+  id        String   @id @default(cuid())
+  title     String
+  source    String
+  content   String
+  mimeType  String   @default("text/plain")
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  chunks Chunk[]
+
+  @@map("documents")
+}
+
+model Chunk {
+  id         String   @id @default(cuid())
+  documentId String
+  content    String
+  index      Int
+  embedding  Float[]
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@map("chunks")
+}
+
+// ─── MCP Connectors ──────────────────────────────────────────────
+
+model McpConnector {
+  id          String        @id @default(cuid())
+  name        String
+  description String        @default("")
+  serverUrl   String
+  transport   McpTransport  @default(SSE)
+  status      ConnectorStatus @default(DISCONNECTED)
+  config      Json          @default("{}")
+  tools       Json          @default("[]")
+  lastPing    DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("mcp_connectors")
+}
+
+enum McpTransport {
+  STDIO
+  SSE
+}
+
+enum ConnectorStatus {
+  CONNECTED
+  DISCONNECTED
+  ERROR
+}
+
+// ─── Feedback ────────────────────────────────────────────────────
+
+model Feedback {
+  id        String       @id @default(cuid())
+  messageId String?
+  chunkId   String?
+  type      FeedbackType
+  comment   String?
+  createdAt DateTime     @default(now())
+
+  @@map("feedback")
+}
+
+enum FeedbackType {
+  POSITIVE
+  NEGATIVE
+  NEUTRAL
+}
